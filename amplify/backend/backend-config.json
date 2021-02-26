@@ -19,7 +19,15 @@
               "userPoolId": "authamplifexpotutorial231414443"
             }
           },
-          "additionalAuthenticationProviders": []
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "API_KEY",
+              "apiKeyConfig": {
+                "apiKeyExpirationDays": 7,
+                "description": "api key for amplify-expo-tutorial-2"
+              }
+            }
+          ]
         }
       }
     }
