@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "amplifexpotutorial2",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authamplifexpotutorial231414443",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

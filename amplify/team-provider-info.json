@@ -36,6 +36,11 @@
       "StackName": "amplify-amplifexpotutorial2-test-164202",
       "StackId": "arn:aws:cloudformation:ap-northeast-2:220337603506:stack/amplify-amplifexpotutorial2-test-164202/1ec0c9a0-7806-11eb-9d7c-06ee6665d6cc",
       "AmplifyAppId": "djhgl9j02x991"
+    },
+    "categories": {
+      "auth": {
+        "amplifexpotutorial231414443": {}
+      }
     }
   }
 }
