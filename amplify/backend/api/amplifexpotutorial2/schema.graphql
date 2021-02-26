@@ -48,8 +48,6 @@ type Cake
       { allow: public, provider: apiKey, operations: [read] }
     ]
   )
-  # Todo delete
-  @key(name: "byOwner", fields: ["ownerID", "eventDate", "status"])
   @key(name: "byUser", fields: ["userID"]) {
   id: ID!
   itemImageKey: [String]!
@@ -57,10 +55,6 @@ type Cake
   content: String
   dueDate: AWSDate!
   status: CakeStatus!
-  # Todo delete
-  ownerID: ID
-  eventDate: AWSDate!
-
   userID: ID!
   user: User @connection(fields: ["userID"])
   # hasMany
@@ -135,8 +129,7 @@ type Address @model @key(name: "byUser", fields: ["userID"]) {
   phoneNumber: String!
   userID: ID!
   user: User @connection(fields: ["userID"])
-  shippingID: ID
-  shipping: Shipping @connection(fields: ["shippingID"])
+  shipping: [Shipping] @connection(keyName: "byAddress", fields: ["id"])
 }
 
 #TODO paymentMethod 지우기
