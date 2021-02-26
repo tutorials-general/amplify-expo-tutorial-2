@@ -1,5 +1,222 @@
-type Todo @model {
+enum ProcessStatusType {
+  onGoing
+  finished
+}
+
+enum genderType {
+  male
+  female
+  notSelected
+}
+
+# User
+type User
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "owner", provider: userPools }
+      { allow: private, provider: userPools, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
+    ]
+  )
+  @key(name: "byOwner", fields: ["owner"], queryField: "userByOwner") {
   id: ID!
+  fullName: String!
+  birthday: AWSDate!
+  gender: genderType!
+  allowNotification: Boolean!
+  isAgreeTermOfService: Boolean!
+  isAgreeMarketingReceivement: Boolean!
+  isAgreePrivacyPolicy: Boolean!
+  owner: String
+  email: String
+  phoneNumber: String
+  addresses: [Address] @connection(keyName: "byUser", fields: ["id"])
+  cakes: [Cake] @connection(keyName: "byUser", fields: ["id"])
+  sprinkles: [Sprinkle] @connection(keyName: "byUser", fields: ["id"])
+  questions: [Question] @connection(keyName: "byUser", fields: ["id"])
+}
+
+type Cake
+  @model
+  @auth(
+    rules: [
+      # Allow all auth users to create event
+      { allow: owner, provider: userPools }
+      # guest can only read
+      { allow: private, provider: userPools, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
+    ]
+  )
+  # Todo delete
+  @key(name: "byOwner", fields: ["ownerID", "eventDate", "status"])
+  @key(name: "byUser", fields: ["userID"]) {
+  id: ID!
+  itemImageKey: [String]!
+  title: String!
+  content: String
+  dueDate: AWSDate!
+  status: CakeStatus!
+  # Todo delete
+  ownerID: ID
+  eventDate: AWSDate!
+
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  # hasMany
+  sprinkles: [Sprinkle] @connection(keyName: "byCake", fields: ["id"])
+  itemDetail: [ItemDetail] @connection(keyName: "byCake", fields: ["id"])
+  # hasOne
+  shipping: Shipping @connection(fields: ["id"])
+  selfPayment: Payment @connection(fields: ["id"])
+}
+
+type ItemDetail @model @key(name: "byCake", fields: ["cakeID"]) {
+  id: ID!
+  product: Product!
+  confirmedPrice: Int
+  cakeID: ID!
+  cake: Cake @connection(fields: ["cakeID"])
+}
+
+type Shipping @model @key(name: "byAddress", fields: ["addressID"]) {
+  id: ID!
+  receipt: String
+  status: ShippingStatus
+  addressID: ID!
+  address: Address @connection(fields: ["addressID"])
+  cakeID: ID!
+  cake: Cake @connection(fields: ["cakeID"])
+}
+
+# TODO : back sholud open to public if has privated
+type Sprinkle
+  @model
+  @auth(
+    rules: [
+      { allow: owner, provider: userPools }
+      { allow: private, provider: userPools, operations: [read] }
+    ]
+  )
+  @key(name: "byCake", fields: ["cakeID", "amount", "currency"])
+  @key(name: "byUser", fields: ["userID"]) {
+  id: ID!
+  amount: Int!
+  currency: Currency!
+  message: String
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  cakeID: ID!
+  cake: Cake @connection(fields: ["cakeID"])
+  payment: Payment @connection(fields: ["id"])
+}
+
+# Admin
+# 1:1 문의
+type Question @model @key(name: "byUser", fields: ["userID"]) {
+  id: ID!
+  title: String
+  content: String
+  status: ProcessStatusType
+  reply: [ReplyType]
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+}
+type ReplyType {
+  createdAt: String
+  content: String
+}
+
+type Address @model @key(name: "byUser", fields: ["userID"]) {
+  id: ID!
+  addressMain: String!
+  addressDetail: String!
+  receiverName: String!
+  phoneNumber: String!
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  shippingID: ID
+  shipping: Shipping @connection(fields: ["shippingID"])
+}
+
+#TODO paymentMethod 지우기
+# type PaymentMethod @model @key(name: "byUser", fields: ["userID"]) {
+#   id: ID!
+#   paymentMethodId: String!
+#   userID: ID!
+#   user: User @connection(fields: ["userID"])
+# }
+
+type Payment @model {
+  id: ID!
+  type: PaymentType!
+  status: PaymentStatus!
+  amount: Int!
+  virtualAccountNumber: String
+  cakeID: ID!
+  cake: Cake @connection(fields: ["cakeID"])
+  sprinkleID: ID!
+  sprinkle: Sprinkle @connection(fields: ["sprinkleID"])
+}
+
+type Notice @model {
+  id: ID!
+  title: String!
+  content: String!
+}
+
+enum PaymentStatus {
+  Success
+  Pending
+  Failed
+  Cancelled
+}
+
+enum PaymentType {
+  #가상계좌
+  VirtualAccount
+
+  #card
+  Card
+}
+
+enum Currency {
+  KRW
+  USD
+}
+
+enum ShippingStatus {
+  Pending
+  Confirmed
+  InWarehouse
+  Shipped
+  Delivered
+  Refunded
+  Retrieved
+  Missing
+}
+
+type Option {
+  product: Product!
+  title: String!
+  price: Int!
+}
+
+type S3Object {
+  bucket: String!
+  region: String!
+  key: String!
+}
+
+enum CakeStatus {
+  onGoing
+  completed
+  failed
+}
+
+type Product {
   name: String!
-  description: String
+  manufacturer: String # TODO : check this need more specific type
+  modelNo: String
+  price: Int
 }
